@@ -1,7 +1,24 @@
 import { useState, useEffect } from "react";
-import { Heart, Camera, ImagePlus, Upload, X, Loader2 } from "lucide-react";
+import { Heart, Camera, ImagePlus, Upload, X, Loader2, GripVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface GalleryPhoto {
   id: string;
@@ -11,6 +28,75 @@ interface GalleryPhoto {
   created_at: string;
 }
 
+interface SortablePhotoProps {
+  photo: GalleryPhoto;
+  getPhotoUrl: (path: string) => string;
+  onDelete: (photo: GalleryPhoto) => void;
+}
+
+const SortablePhoto = ({ photo, getPhotoUrl, onDelete }: SortablePhotoProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: photo.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`aspect-square rounded-2xl overflow-hidden shadow-romantic border border-rose-medium/20 group relative ${
+        isDragging ? "ring-4 ring-primary/50 scale-105" : ""
+      }`}
+    >
+      <img
+        src={getPhotoUrl(photo.file_path)}
+        alt={photo.caption || "Memory"}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+
+      {/* Drag handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute top-2 left-2 p-2 bg-black/50 rounded-lg text-white cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+      >
+        <GripVertical className="w-4 h-4" />
+      </div>
+
+      {/* Overlay with caption */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 pointer-events-none">
+        {photo.caption && (
+          <p className="text-white font-body text-sm">{photo.caption}</p>
+        )}
+      </div>
+
+      {/* Delete button */}
+      <button
+        onClick={() => onDelete(photo)}
+        className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100"
+      >
+        <X className="w-4 h-4" />
+      </button>
+
+      {/* Heart overlay on hover */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <Heart className="w-12 h-12 text-white opacity-0 group-hover:opacity-80 transition-opacity duration-300 fill-white/50 drop-shadow-lg" />
+      </div>
+    </div>
+  );
+};
+
 const PhotoGallery = () => {
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -18,6 +104,17 @@ const PhotoGallery = () => {
   const [caption, setCaption] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchPhotos();
@@ -35,6 +132,34 @@ const PhotoGallery = () => {
     }
 
     setPhotos(data || []);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = photos.findIndex((p) => p.id === active.id);
+      const newIndex = photos.findIndex((p) => p.id === over.id);
+
+      const newPhotos = arrayMove(photos, oldIndex, newIndex);
+      setPhotos(newPhotos);
+
+      // Update display_order in database
+      const updates = newPhotos.map((photo, index) => ({
+        id: photo.id,
+        file_path: photo.file_path,
+        caption: photo.caption,
+        display_order: index,
+        created_at: photo.created_at,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from("gallery_photos")
+          .update({ display_order: update.display_order })
+          .eq("id", update.id);
+      }
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,14 +180,12 @@ const PhotoGallery = () => {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `photos/${fileName}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from("gallery")
         .upload(filePath, selectedFile);
 
       if (uploadError) throw uploadError;
 
-      // Save metadata to database
       const { error: dbError } = await supabase.from("gallery_photos").insert({
         file_path: filePath,
         caption: caption || null,
@@ -76,7 +199,6 @@ const PhotoGallery = () => {
         description: "Your memory has been added to the gallery.",
       });
 
-      // Reset and refresh
       setSelectedFile(null);
       setPreviewUrl(null);
       setCaption("");
@@ -101,10 +223,7 @@ const PhotoGallery = () => {
 
   const handleDelete = async (photo: GalleryPhoto) => {
     try {
-      // Delete from storage
       await supabase.storage.from("gallery").remove([photo.file_path]);
-
-      // Delete from database
       await supabase.from("gallery_photos").delete().eq("id", photo.id);
 
       toast({
@@ -120,7 +239,6 @@ const PhotoGallery = () => {
 
   return (
     <section className="py-20 px-4 bg-background relative">
-      {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/5 blur-3xl rounded-full" />
 
       <div className="max-w-6xl mx-auto relative z-10">
@@ -132,56 +250,43 @@ const PhotoGallery = () => {
           <p className="font-body text-muted-foreground mt-4 max-w-md mx-auto">
             Every moment with you is a treasure I hold close to my heart
           </p>
+          <p className="font-body text-muted-foreground/60 text-sm mt-2">
+            ✨ Drag photos to rearrange them
+          </p>
           <div className="w-24 h-0.5 bg-gold mx-auto mt-6" />
         </div>
 
-        {/* Photo Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-          {photos.map((photo, index) => (
-            <div
-              key={photo.id}
-              className="aspect-square rounded-2xl overflow-hidden shadow-romantic border border-rose-medium/20 animate-fade-in-up group relative"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <img
-                src={getPhotoUrl(photo.file_path)}
-                alt={photo.caption || "Memory"}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+              {photos.map((photo) => (
+                <SortablePhoto
+                  key={photo.id}
+                  photo={photo}
+                  getPhotoUrl={getPhotoUrl}
+                  onDelete={handleDelete}
+                />
+              ))}
 
-              {/* Overlay with caption */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                {photo.caption && (
-                  <p className="text-white font-body text-sm">{photo.caption}</p>
-                )}
-                <button
-                  onClick={() => handleDelete(photo)}
-                  className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-red-500 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Heart overlay on hover */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Heart className="w-12 h-12 text-white opacity-0 group-hover:opacity-80 transition-opacity duration-300 fill-white/50 drop-shadow-lg" />
-              </div>
+              {/* Upload Button Card */}
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="aspect-square rounded-2xl overflow-hidden shadow-romantic border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-rose-light to-secondary group cursor-pointer"
+              >
+                <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Upload className="w-8 h-8 text-primary" />
+                </div>
+                <p className="font-body text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                  Add Photo
+                </p>
+              </button>
             </div>
-          ))}
-
-          {/* Upload Button Card */}
-          <button
-            onClick={() => setShowUploadModal(true)}
-            className="aspect-square rounded-2xl overflow-hidden shadow-romantic border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-rose-light to-secondary group cursor-pointer animate-fade-in-up"
-          >
-            <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-              <Upload className="w-8 h-8 text-primary" />
-            </div>
-            <p className="font-body text-sm text-muted-foreground group-hover:text-primary transition-colors">
-              Add Photo
-            </p>
-          </button>
-        </div>
+          </SortableContext>
+        </DndContext>
 
         {photos.length === 0 && (
           <p className="text-center text-muted-foreground font-body text-sm italic mb-8">

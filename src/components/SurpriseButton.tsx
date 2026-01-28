@@ -132,7 +132,7 @@ const SurpriseButton = () => {
               </div>
               
               <p className="font-body text-muted-foreground text-sm tracking-wide">
-                — Your Rehan 💕
+                — Your Mohid 💕
               </p>
             </div>
             

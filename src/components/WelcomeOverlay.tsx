@@ -105,7 +105,7 @@ const WelcomeOverlay = ({ onEnter }: WelcomeOverlayProps) => {
           </h1>
           
           <p className="font-elegant text-2xl text-foreground/70 italic mb-3 animate-fade-in-up animation-delay-300">
-            From Rehan, with all my love
+            From Mohid, with all my love
           </p>
           
           {/* Ornamental divider */}

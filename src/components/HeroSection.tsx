@@ -85,7 +85,7 @@ const HeroSection = () => {
             With love from
           </p>
           <p className="font-script text-4xl md:text-5xl text-gradient-gold">
-            Rehan
+            Mohid
           </p>
         </div>
       </div>

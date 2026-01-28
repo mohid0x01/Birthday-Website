@@ -34,7 +34,7 @@ const Footer = () => {
           for Ayesha
         </p>
         <p className="text-xs text-muted-foreground/50 font-body mt-2 tracking-wider">
-          From Rehan • February 9th
+          From Mohid • February 9th
         </p>
       </div>
     </footer>
