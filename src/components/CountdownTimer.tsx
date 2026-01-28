@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 
 interface TimeLeft {
   days: number;
@@ -16,15 +17,12 @@ const CountdownTimer = () => {
       const now = new Date();
       const currentYear = now.getFullYear();
       
-      // Birthday is Feb 9th
-      let birthdayDate = new Date(currentYear, 1, 9); // Month is 0-indexed
+      let birthdayDate = new Date(currentYear, 1, 9);
       
-      // If birthday has passed this year, use next year
       if (now > birthdayDate) {
         birthdayDate = new Date(currentYear + 1, 1, 9);
       }
 
-      // Check if today is the birthday
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const birthdayThisYear = new Date(currentYear, 1, 9);
       
@@ -58,7 +56,7 @@ const CountdownTimer = () => {
         <h2 className="font-script text-5xl md:text-7xl text-primary mb-4 animate-heartbeat">
           🎂 Happy Birthday! 🎂
         </h2>
-        <p className="font-heading text-xl text-muted-foreground italic">
+        <p className="font-elegant text-xl text-muted-foreground italic">
           Today is your special day, my love!
         </p>
       </div>
@@ -66,13 +64,18 @@ const CountdownTimer = () => {
   }
 
   const TimeBlock = ({ value, label }: { value: number; label: string }) => (
-    <div className="flex flex-col items-center">
-      <div className="bg-card shadow-romantic rounded-2xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-rose-medium/30">
-        <span className="font-heading text-3xl md:text-5xl font-semibold text-primary">
-          {String(value).padStart(2, '0')}
-        </span>
+    <div className="flex flex-col items-center group">
+      <div className="relative">
+        {/* Glow effect */}
+        <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-xl group-hover:bg-primary/20 transition-colors duration-500" />
+        
+        <div className="relative luxury-card p-4 md:p-6 min-w-[75px] md:min-w-[110px] border-rose-medium/40 group-hover:border-gold/40 transition-colors duration-300">
+          <span className="font-heading text-3xl md:text-5xl font-semibold text-primary block">
+            {String(value).padStart(2, '0')}
+          </span>
+        </div>
       </div>
-      <span className="mt-2 text-sm md:text-base text-muted-foreground font-body tracking-wider uppercase">
+      <span className="mt-3 text-xs md:text-sm text-muted-foreground font-body tracking-[0.2em] uppercase">
         {label}
       </span>
     </div>
@@ -80,13 +83,23 @@ const CountdownTimer = () => {
 
   return (
     <div className="text-center">
-      <p className="font-body text-muted-foreground mb-6 tracking-wide uppercase text-sm">
-        Countdown to Your Special Day
-      </p>
-      <div className="flex justify-center gap-3 md:gap-6">
+      <div className="flex items-center justify-center gap-2 mb-8">
+        <div className="w-8 h-px bg-gradient-to-r from-transparent to-gold/50" />
+        <Heart className="w-4 h-4 text-primary fill-primary/50" />
+        <p className="font-body text-muted-foreground tracking-[0.3em] uppercase text-xs">
+          Countdown to Your Day
+        </p>
+        <Heart className="w-4 h-4 text-primary fill-primary/50" />
+        <div className="w-8 h-px bg-gradient-to-l from-transparent to-gold/50" />
+      </div>
+      
+      <div className="flex justify-center gap-3 md:gap-5">
         <TimeBlock value={timeLeft.days} label="Days" />
+        <div className="flex items-center text-primary/30 font-heading text-2xl md:text-4xl pt-2">:</div>
         <TimeBlock value={timeLeft.hours} label="Hours" />
+        <div className="flex items-center text-primary/30 font-heading text-2xl md:text-4xl pt-2">:</div>
         <TimeBlock value={timeLeft.minutes} label="Mins" />
+        <div className="flex items-center text-primary/30 font-heading text-2xl md:text-4xl pt-2">:</div>
         <TimeBlock value={timeLeft.seconds} label="Secs" />
       </div>
     </div>

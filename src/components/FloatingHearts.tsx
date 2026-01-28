@@ -7,6 +7,7 @@ interface FloatingHeart {
   size: number;
   delay: number;
   duration: number;
+  opacity: number;
 }
 
 const FloatingHearts = () => {
@@ -15,13 +16,14 @@ const FloatingHearts = () => {
   useEffect(() => {
     const generateHearts = () => {
       const newHearts: FloatingHeart[] = [];
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 20; i++) {
         newHearts.push({
           id: i,
           left: Math.random() * 100,
-          size: Math.random() * 20 + 12,
-          delay: Math.random() * 8,
-          duration: Math.random() * 4 + 6,
+          size: Math.random() * 18 + 10,
+          delay: Math.random() * 10,
+          duration: Math.random() * 5 + 8,
+          opacity: Math.random() * 0.3 + 0.1,
         });
       }
       setHearts(newHearts);
@@ -44,7 +46,8 @@ const FloatingHearts = () => {
         >
           <Heart
             size={heart.size}
-            className="text-primary/30 fill-primary/20"
+            className="text-primary fill-primary"
+            style={{ opacity: heart.opacity }}
           />
         </div>
       ))}
