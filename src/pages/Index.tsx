@@ -1,9 +1,12 @@
 import { useState } from "react";
 import FloatingHearts from "@/components/FloatingHearts";
+import StarryBackground from "@/components/StarryBackground";
+import CursorHearts from "@/components/CursorHearts";
 import HeroSection from "@/components/HeroSection";
 import LoveLetter from "@/components/LoveLetter";
-import WishesSection from "@/components/WishesSection";
+import LovePoem from "@/components/LovePoem";
 import ReasonsSection from "@/components/ReasonsSection";
+import WishesSection from "@/components/WishesSection";
 import SurpriseButton from "@/components/SurpriseButton";
 import PhotoGallery from "@/components/PhotoGallery";
 import Footer from "@/components/Footer";
@@ -16,10 +19,13 @@ const Index = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       {!hasEntered && <WelcomeOverlay onEnter={() => setHasEntered(true)} />}
       
-      <div className={`transition-opacity duration-500 ${hasEntered ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`transition-opacity duration-700 ${hasEntered ? 'opacity-100' : 'opacity-0'}`}>
+        <StarryBackground />
+        <CursorHearts />
         <FloatingHearts />
         <HeroSection />
         <LoveLetter />
+        <LovePoem />
         <ReasonsSection />
         <WishesSection />
         <SurpriseButton />
