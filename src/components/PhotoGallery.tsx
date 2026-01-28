@@ -1,14 +1,14 @@
-import { Heart, Camera } from "lucide-react";
+import { Heart, Camera, ImagePlus } from "lucide-react";
 
 const PhotoGallery = () => {
-  // Placeholder images - these can be replaced with actual photos
+  // Placeholder images - replace with actual photos
   const photos = [
-    { id: 1, placeholder: true },
-    { id: 2, placeholder: true },
-    { id: 3, placeholder: true },
-    { id: 4, placeholder: true },
-    { id: 5, placeholder: true },
-    { id: 6, placeholder: true },
+    { id: 1, label: "Our first photo together" },
+    { id: 2, label: "A special moment" },
+    { id: 3, label: "Adventure time" },
+    { id: 4, label: "Celebration" },
+    { id: 5, label: "Just us" },
+    { id: 6, label: "Forever memories" },
   ];
 
   return (
@@ -32,12 +32,15 @@ const PhotoGallery = () => {
               className="aspect-square rounded-2xl overflow-hidden shadow-romantic border border-rose-medium/20 animate-fade-in-up group relative cursor-pointer hover:scale-[1.02] transition-transform duration-300"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              {/* Placeholder for photos */}
-              <div className="w-full h-full bg-gradient-to-br from-rose-light to-rose-medium flex items-center justify-center">
+              {/* Placeholder for photos - upload your images! */}
+              <div className="w-full h-full bg-gradient-to-br from-rose-light via-rose-medium/50 to-secondary flex items-center justify-center">
                 <div className="text-center p-4">
-                  <Heart className="w-10 h-10 mx-auto text-primary/40 mb-2 group-hover:animate-heartbeat" />
-                  <p className="text-sm text-muted-foreground/60 font-body">
-                    Add your photo here
+                  <ImagePlus className="w-12 h-12 mx-auto text-primary/30 mb-3 group-hover:scale-110 transition-transform" />
+                  <p className="text-sm text-muted-foreground/70 font-body font-medium">
+                    {photo.label}
+                  </p>
+                  <p className="text-xs text-muted-foreground/50 mt-1">
+                    Upload photo here
                   </p>
                 </div>
               </div>
@@ -50,9 +53,14 @@ const PhotoGallery = () => {
           ))}
         </div>
 
-        <p className="text-center mt-8 text-muted-foreground font-body text-sm italic">
-          💕 Replace these with your favorite memories together 💕
-        </p>
+        <div className="text-center mt-10 p-6 bg-secondary/50 rounded-2xl border border-dashed border-primary/30 max-w-lg mx-auto">
+          <ImagePlus className="w-8 h-8 mx-auto text-primary/50 mb-3" />
+          <p className="text-muted-foreground font-body text-sm">
+            <span className="font-semibold text-foreground">Upload your photos!</span>
+            <br />
+            Share your images with me and I'll add them to the gallery 💕
+          </p>
+        </div>
       </div>
     </section>
   );
