@@ -15,7 +15,8 @@ export default {
     extend: {
       fontFamily: {
         script: ["'Great Vibes'", "cursive"],
-        heading: ["'Cormorant Garamond'", "serif"],
+        heading: ["'Playfair Display'", "'Cormorant Garamond'", "serif"],
+        elegant: ["'Cormorant Garamond'", "serif"],
         body: ["'Montserrat'", "sans-serif"],
       },
       colors: {
@@ -56,12 +57,19 @@ export default {
           light: "hsl(var(--rose-light))",
           medium: "hsl(var(--rose-medium))",
           dark: "hsl(var(--rose-dark))",
+          deep: "hsl(var(--rose-deep))",
         },
         gold: {
           DEFAULT: "hsl(var(--gold))",
           light: "hsl(var(--gold-light))",
+          dark: "hsl(var(--gold-dark))",
+        },
+        "rose-gold": {
+          DEFAULT: "hsl(var(--rose-gold))",
+          light: "hsl(var(--rose-gold-light))",
         },
         cream: "hsl(var(--cream))",
+        blush: "hsl(var(--blush))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -77,6 +85,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
+        "3xl": "calc(var(--radius) + 16px)",
       },
       keyframes: {
         "accordion-down": {
