@@ -76,7 +76,7 @@ const LoveLetter = () => {
               <p className="text-right">
                 <span className="text-gold font-heading font-semibold text-lg">With all my love,</span>
                 <br />
-                <span className="font-script text-4xl text-primary mt-2 inline-block">Rehan</span>
+                <span className="font-script text-4xl text-primary mt-2 inline-block">Mohid</span>
               </p>
             </div>
           </div>

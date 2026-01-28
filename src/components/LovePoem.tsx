@@ -95,7 +95,7 @@ const LovePoem = () => {
                 <Heart className="w-5 h-5 text-primary fill-primary/60" />
               </div>
               <p className="font-body text-sm text-muted-foreground tracking-wider">
-                — Written with love, for Ayesha
+                — Written with love by Mohid, for Ayesha
               </p>
             </div>
           </div>
