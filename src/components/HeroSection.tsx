@@ -52,7 +52,7 @@ const HeroSection = () => {
           <div className="flex items-center justify-center gap-5 mb-4">
             <Heart className="w-7 h-7 md:w-9 md:h-9 text-primary fill-primary/80 animate-float" />
             <h1 className="font-script text-7xl md:text-9xl lg:text-[10rem] text-primary drop-shadow-sm">
-              Ayesha
+              Hasina
             </h1>
             <Heart className="w-7 h-7 md:w-9 md:h-9 text-primary fill-primary/80 animate-float animation-delay-300" />
           </div>
