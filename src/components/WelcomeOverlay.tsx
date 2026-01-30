@@ -11,10 +11,11 @@ const WelcomeOverlay = ({ onEnter }: WelcomeOverlayProps) => {
 
   useEffect(() => {
     audioRef.current = new Audio(
-      "https://cdn.pixabay.com/audio/2022/01/18/audio_d0c6ff1bab.mp3"
+      "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
     );
     audioRef.current.loop = true;
-    audioRef.current.volume = 0.35;
+    audioRef.current.volume = 0.3;
+    audioRef.current.preload = "auto";
   }, []);
 
   const handleEnter = () => {
@@ -101,7 +102,7 @@ const WelcomeOverlay = ({ onEnter }: WelcomeOverlayProps) => {
           </p>
           
           <h1 className="font-script text-6xl md:text-8xl text-primary mb-3 animate-fade-in-up animation-delay-200 drop-shadow-sm">
-            For Ayesha
+            For Hasina
           </h1>
           
           <p className="font-elegant text-2xl text-foreground/70 italic mb-3 animate-fade-in-up animation-delay-300">

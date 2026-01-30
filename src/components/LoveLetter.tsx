@@ -47,7 +47,7 @@ const LoveLetter = () => {
           
           <div className="font-elegant text-lg md:text-xl leading-[1.9] text-foreground/85 space-y-6">
             <p className="text-gradient-gold font-heading font-semibold text-2xl md:text-3xl">
-              My Dearest Ayesha,
+              My Dearest Hasina,
             </p>
             
             <p className="italic text-foreground/75">
