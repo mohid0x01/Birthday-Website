@@ -31,7 +31,7 @@ const Footer = () => {
         <p className="text-sm text-muted-foreground/70 font-body flex items-center justify-center gap-2">
           Made with
           <Heart className="w-4 h-4 text-primary fill-primary animate-pulse" />
-          for Ayesha
+          for Hasina
         </p>
         <p className="text-xs text-muted-foreground/50 font-body mt-2 tracking-wider">
           From Mohid • February 9th
