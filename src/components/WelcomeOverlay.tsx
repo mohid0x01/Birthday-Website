@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Music, Star } from "lucide-react";
+import { Heart, Sparkles, Music, Star, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface WelcomeOverlayProps {
@@ -7,22 +7,77 @@ interface WelcomeOverlayProps {
 
 const WelcomeOverlay = ({ onEnter }: WelcomeOverlayProps) => {
   const [isExiting, setIsExiting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [musicReady, setMusicReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Pre-generate music on component mount
   useEffect(() => {
-    audioRef.current = new Audio(
-      "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-    );
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.3;
-    audioRef.current.preload = "auto";
+    const generateMusic = async () => {
+      try {
+        console.log("Generating romantic piano music...");
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-music`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              prompt: "Calm romantic piano music, soft and tender love theme, gentle peaceful melody, wedding style, emotional and heartfelt, solo piano",
+              duration: 120,
+            }),
+          }
+        );
+
+        const data = await response.json();
+        
+        if (data.success && data.audioContent) {
+          const audioUrl = `data:audio/mpeg;base64,${data.audioContent}`;
+          audioRef.current = new Audio(audioUrl);
+          audioRef.current.loop = true;
+          audioRef.current.volume = 0.4;
+          setMusicReady(true);
+          console.log("Music ready to play!");
+        } else {
+          console.error("Music generation failed:", data.error);
+          // Fallback to static music
+          audioRef.current = new Audio(
+            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+          );
+          audioRef.current.loop = true;
+          audioRef.current.volume = 0.3;
+          setMusicReady(true);
+        }
+      } catch (error) {
+        console.error("Error generating music:", error);
+        // Fallback to static music
+        audioRef.current = new Audio(
+          "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        );
+        audioRef.current.loop = true;
+        audioRef.current.volume = 0.3;
+        setMusicReady(true);
+      }
+    };
+
+    generateMusic();
   }, []);
 
-  const handleEnter = () => {
-    setIsExiting(true);
+  const handleEnter = async () => {
+    setIsLoading(true);
+    
     if (audioRef.current) {
-      audioRef.current.play().catch(console.error);
+      try {
+        await audioRef.current.play();
+      } catch (error) {
+        console.error("Audio play error:", error);
+      }
     }
+    
+    setIsExiting(true);
     setTimeout(() => {
       onEnter();
     }, 1000);
@@ -118,13 +173,17 @@ const WelcomeOverlay = ({ onEnter }: WelcomeOverlayProps) => {
           
           <div className="flex items-center justify-center gap-2 text-muted-foreground mb-10 animate-fade-in-up animation-delay-500">
             <Music className="w-4 h-4" />
-            <span className="font-body text-sm tracking-wide">Best experienced with sound</span>
+            <span className="font-body text-sm tracking-wide">
+              {musicReady ? "Romantic piano music ready ♪" : "Preparing romantic music..."}
+            </span>
+            {!musicReady && <Loader2 className="w-4 h-4 animate-spin" />}
           </div>
         </div>
 
         <button
           onClick={handleEnter}
-          className="animate-fade-in-up animation-delay-700 group relative inline-flex items-center gap-4 px-12 py-5 rounded-full font-body font-medium text-lg overflow-hidden transition-all duration-500 hover:scale-105 animate-glow-pulse"
+          disabled={isLoading}
+          className="animate-fade-in-up animation-delay-700 group relative inline-flex items-center gap-4 px-12 py-5 rounded-full font-body font-medium text-lg overflow-hidden transition-all duration-500 hover:scale-105 animate-glow-pulse disabled:opacity-70 disabled:cursor-not-allowed"
           style={{
             background: "linear-gradient(135deg, hsl(340 82% 52%) 0%, hsl(340 85% 45%) 50%, hsl(15 45% 55%) 100%)",
             color: "white",
@@ -133,8 +192,14 @@ const WelcomeOverlay = ({ onEnter }: WelcomeOverlayProps) => {
           {/* Shimmer effect */}
           <div className="absolute inset-0 animate-shimmer opacity-40" />
           
-          <Heart className="w-5 h-5 relative z-10 group-hover:animate-heartbeat fill-white/30" />
-          <span className="relative z-10 tracking-wide">Enter & Play Music</span>
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 relative z-10 animate-spin" />
+          ) : (
+            <Heart className="w-5 h-5 relative z-10 group-hover:animate-heartbeat fill-white/30" />
+          )}
+          <span className="relative z-10 tracking-wide">
+            {isLoading ? "Opening..." : "Enter & Play Music"}
+          </span>
           <Sparkles className="w-5 h-5 relative z-10 group-hover:animate-pulse-glow" />
         </button>
 
